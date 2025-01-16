@@ -1,0 +1,17 @@
+services:
+  hexa-generator-cli:
+    container_name: hexa-generator-cli
+    build:
+      context: ./docker
+      args:
+        php_version: 7.4
+    image: hexa-generator/php7.4-cli
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    working_dir: /var/app/hexa-generator
+    volumes:
+      - .:/var/app/hexa-generator
+    environment:
+      - XDEBUG_MODE=coverage
+
