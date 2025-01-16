@@ -4,7 +4,7 @@ namespace {{namespace}}\UseCase\{{business}};
 
 use Apido\HexaLib\UseCase\AbstractUseCase;
 use Apido\HexaLib\UseCase\UseCaseInterface;
-use {{namespace}}\Api\{{usecase}}UseCaseInterface;
+use {{namespace}}\Api\{{business}}\{{usecase}}UseCaseInterface;
 use {{namespace}}\UseCase\{{business}}\Event\{{usecase}}Event;
 use {{namespace}}\UseCase\{{business}}\Message\{{usecase}}Result;
 use Psr\Log\LoggerInterface;
