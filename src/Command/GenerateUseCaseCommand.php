@@ -45,30 +45,6 @@ class GenerateUseCaseCommand extends Command
 
         $io->section("Input information");
 
-        if (is_null($businessName)) {
-            $businessName = $io->ask("Enter your domain", null, function ($businessName): string {
-                if (empty($businessName)) {
-                    throw new \InvalidArgumentException("Domain name cannot be empty");
-                }
-                if (!is_string($businessName)) {
-                    throw new \InvalidArgumentException("Domain name must be a string");
-                }
-                return $businessName;
-            });
-        }
-
-        if (is_null($useCaseName)) {
-            $useCaseName = $io->ask("Enter your use case name", null, function ($useCaseName): string {
-                if (empty($useCaseName)) {
-                    throw new \InvalidArgumentException("Use case name cannot be empty");
-                }
-                if (!is_string($useCaseName)) {
-                    throw new \InvalidArgumentException("Use case name must be a string");
-                }
-                return $useCaseName;
-            });
-        }
-
         if (is_null($targetDir)) {
             $targetDir = $io->ask("Enter the target directory", ".", function ($targetDir): string {
                 if (empty($targetDir)) {
@@ -96,18 +72,63 @@ class GenerateUseCaseCommand extends Command
             });
         }
 
-        $io->writeln("Business theme Name: " . $businessName);
-        $io->writeln("Use case Name: " . $useCaseName);
+        if (is_null($businessName)) {
+            $businessName = $io->ask("Enter your business theme", null, function ($businessName): string {
+                if (empty($businessName)) {
+                    throw new \InvalidArgumentException("Business theme name cannot be empty");
+                }
+                if (!is_string($businessName)) {
+                    throw new \InvalidArgumentException("Business theme name must be a string");
+                }
+                return $businessName;
+            });
+        }
+
+        if (is_null($useCaseName)) {
+            $useCaseName = $io->ask("Enter your use case name", null, function ($useCaseName): string {
+                if (empty($useCaseName)) {
+                    throw new \InvalidArgumentException("Use case name cannot be empty");
+                }
+                if (!is_string($useCaseName)) {
+                    throw new \InvalidArgumentException("Use case name must be a string");
+                }
+                return $useCaseName;
+            });
+        }
+
         $io->writeln("Target directory: " . realpath($targetDir));
         $io->writeln("Namespace: " . $namespace);
+        $io->writeln("Business theme Name: " . $businessName);
+        $io->writeln("Use case Name: " . $useCaseName);
 
-        if(!$io->confirm('Do you want to continue?', false)) {
+        if (!$io->confirm('Do you want to continue?', false)) {
             $io->warning("Command aborted");
             return Command::SUCCESS;
         }
 
         $io->section("Generate classes");
 
+        $this->generateUseCaseClasses($output, $io, $businessName, $useCaseName, $targetDir, $namespace);
+
+        while ($io->confirm('Do you want to generate another use case within the same context?', false)) {
+            $useCaseName = $io->ask("Enter your use case name", null, function ($useCaseName): string {
+                if (empty($useCaseName)) {
+                    throw new \InvalidArgumentException("Use case name cannot be empty");
+                }
+                if (!is_string($useCaseName)) {
+                    throw new \InvalidArgumentException("Use case name must be a string");
+                }
+                return $useCaseName;
+            });
+            $this->generateUseCaseClasses($output, $io, $businessName, $useCaseName, $targetDir, $namespace);
+        }
+
+        $io->info("Thank you for using HexaGenerator");
+        return Command::SUCCESS;
+    }
+
+    private function generateUseCaseClasses(OutputInterface $output, SymfonyStyle $io, string $businessName, string $useCaseName, string $targetDir, string $namespace)
+    {
         $progressBar = $this->getProgressBar($output);
         $progressBar->setMaxSteps(100);
         $progressBar->setMessage("Prepare output dir...", 'status');
@@ -132,27 +153,7 @@ class GenerateUseCaseCommand extends Command
         $io->writeln("");
         $io->writeln("");
 
-        $io->success("Use case classes availables");
-
-        $io->section("Generate roles");
-
-        while($io->confirm('Do you want to generate new roles for your domain user?', false)) {
-            $roleName = $io->ask("Enter the role name", null, function ($roleName): string {
-                if (empty($roleName)) {
-                    throw new \InvalidArgumentException("Role name cannot be empty");
-                }
-                if (!is_string($roleName)) {
-                    throw new \InvalidArgumentException("Role name must be a string");
-                }
-                return $roleName;
-            });
-
-            $this->codeGenerator->generate($businessName, $roleName, $targetDir, $namespace, ClassType::ROLE);
-            $io->success("Role class $roleName available");
-        }
-
-        $io->info("Thank you for using HexaGenerator");
-        return Command::SUCCESS;
+        $io->success("Use case $useCaseName classes availables");
     }
 
     private function getProgressBar(OutputInterface $output): ProgressBar
